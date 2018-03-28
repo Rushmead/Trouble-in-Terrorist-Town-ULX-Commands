@@ -327,6 +327,7 @@ hook.Add("TTTBeginRound", "mutePlayersNextRound", function()
 			if mutes_left == 0 then
                 v:RemovePData("rmute_mutes")
                 v:RemovePData("rmute_reason")
+								v:ChatPrint("You are no longer muted")
 			else
                 v:SetPData("rmute_mutes", mutes_left)
             end
@@ -457,6 +458,7 @@ hook.Add("TTTBeginRound", "gagPlayersNextRound", function()
 			if gags_left == 0 then
                 v:RemovePData("rgag_gags")
                 v:RemovePData("rgag_reason")
+								v:ChatPrint("You are no longer gagged")
 			else
                 v:SetPData("rgag_gags", gags_left)
             end
