@@ -444,13 +444,7 @@ local function rgagCheck( listener, talker )
 	end
 end
 hook.Add( "PlayerCanHearPlayersVoice", "ULXRGagCheck", rgagCheck )
---[[
-local function rgagCheck( ply, strText )
-  if tonumber(ply:GetPData("rgag_gags")) > 0 then print("gagD") return "" end
-end
 
-hook.Add( "PlayerSay", "ULXTgagCheck", rgagCheck ) -- Very low priority
-]]
 hook.Add("TTTBeginRound", "gagPlayersNextRound", function()
 	local affected_plys = {}
 
