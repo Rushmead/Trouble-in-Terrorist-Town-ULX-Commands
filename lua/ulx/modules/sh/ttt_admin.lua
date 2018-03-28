@@ -382,6 +382,142 @@ end)
 
 
 
+--[Round Gag]---------------------------------------------------------------------------------
+--[[ulx.rgag][gags <target(s)> for a specified number of rounds.]
+@param  {[PlayerObject]} calling_ply   [The player who used the command.]
+@param  {[PlayerObject]} target_ply   [The player(s) who will have the effects of the command applied to them.]
+@param  {[Number]}       num_gag   [The number of rounds a player should be gagd for]
+@param  {[Boolean]}      should_rgag [Hidden]
+--]]
+function ulx.rgag( calling_ply, target_ply, num_gag, should_rgag )
+	if not GetConVarString("gamemode") == "terrortown" then ULib.tsayError( calling_ply, gamemode_error, true ) else
+		local affected_plys = {}
+		local gags_left = tonumber(target_ply:GetPData("rgag_gags")) or 0
+		local current_gag
+		local new_gag
+
+
+		if ulx.getExclusive( target_ply, calling_ply ) then
+			ULib.tsayError( calling_ply, ulx.getExclusive( target_ply, calling_ply ), true )
+		elseif num_gag < 0 then
+			ULib.tsayError( calling_ply, "Invalid integer:\"" .. num_gag .. "\" specified.", true )
+		else
+			current_gag = tonumber(target_ply:GetPData("rgag_gags")) or 0
+			if not should_rgag then
+                new_gag = current_gag + num_gag
+            else
+                new_gag = current_gag - num_gag
+            end
+			if new_gag > 0 then
+                target_ply:SetPData("rgag_gags", new_gag)
+            else
+				target_ply:RemovePData("rgag_gags")
+            end
+
+	    	local gags_left 	= tonumber(target_ply:GetPData("rgag_gags"))  or 0
+			local gags_removed = ( current_gag - gags_left ) 		or 0
+
+			if gags_removed==0 then
+				chat_message = ("#T will not be gagged next round.")
+			elseif gags_removed > 0 then
+				chat_message = ("#A removed ".. gags_removed .." round(s) of gagging from #T.")
+			elseif gags_left == 1 then
+				chat_message = ("#A will gag #T until next round.")
+			elseif gags_left > 1 then
+				chat_message = ("#A will gag #T for the next ".. tostring(gags_left) .." rounds.")
+			end
+			ulx.fancyLogAdmin( calling_ply, chat_message, target_ply, reason )
+		end
+	end
+end
+local rgag = ulx.command( CATEGORY_NAME, "ulx rgag", ulx.rgag, "!rgag" )
+rgag:addParam{ type=ULib.cmds.PlayerArg }
+rgag:addParam{ type=ULib.cmds.NumArg, max=100, default=1, hint="rounds", ULib.cmds.optional, ULib.cmds.round }
+rgag:addParam{ type=ULib.cmds.BoolArg, invisible=true }
+rgag:defaultAccess( ULib.ACCESS_ADMIN )
+rgag:help( "gags target(s) for a number of rounds" )
+rgag:setOpposite( "ulx rrgag", {_, _, _, true}, "!rrgag" )
+--[Helper Functions]---------------------------------------------------------------------------
+local function rgagCheck( listener, talker )
+	if tonumber(talker:GetPData("rgag_gags")) > 0 then
+		return false
+	end
+end
+hook.Add( "PlayerCanHearPlayersVoice", "ULXRGagCheck", rgagCheck )
+--[[
+local function rgagCheck( ply, strText )
+  if tonumber(ply:GetPData("rgag_gags")) > 0 then print("gagD") return "" end
+end
+
+hook.Add( "PlayerSay", "ULXTgagCheck", rgagCheck ) -- Very low priority
+]]
+hook.Add("TTTBeginRound", "gagPlayersNextRound", function()
+	local affected_plys = {}
+
+	for _,v in pairs(player.GetAll()) do
+		local gags_left = tonumber(v:GetPData("rgag_gags")) or 0
+
+		if v:Alive() and gags_left > 0 then
+			local gags_left=gags_left -1
+
+			if gags_left == 0 then
+                v:RemovePData("rgag_gags")
+                v:RemovePData("rgag_reason")
+			else
+                v:SetPData("rgag_gags", gags_left)
+            end
+		end
+	end
+
+	local gag_message
+	for i=1, #affected_plys do
+		local v = affected_plys[ i ]
+		local string_inbetween
+
+		if i > 1 and #affected_plys == i then
+			string_inbetween=" and "
+		elseif i > 1 then
+			string_inbetween=", "
+		end
+
+		string_inbetween = string_inbetween or ""
+		gag_message = ( ( gag_message or "") .. string_inbetween )
+		gag_message = ( ( gag_message or "") .. v:Nick() )
+	end
+
+	local gag_message_context
+	if #affected_plys == 1 then gag_message_context ="was" else gag_message_context ="were" end
+	if #affected_plys ~= 0 then
+		ULib.tsay(_, gag_message .. " ".. gag_message_context .." gagged.")
+	end
+end)
+
+hook.Add("PlayerSpawn", "Inform" , function(ply)
+	local gags_left = tonumber(ply:GetPData("rgag_gags")) or 0
+	local gag_reason = false
+
+	if ply:Alive() and gags_left > 0 then
+		local chat_message = ""
+
+		if gags_left > 0 then
+			chat_message = (chat_message .. "You are gagged this round")
+		end
+		if gags_left > 1 then
+			chat_message = (chat_message .. " and ".. (gags_left - 1) .." round(s) after the current round")
+		end
+		if gag_reason then
+			chat_message = (chat_message .. " for \"".. gag_reason .."\".")
+		else
+			chat_message = (chat_message .. ".")
+		end
+		ply:ChatPrint(chat_message)
+	end
+end)
+--[End]----------------------------------------------------------------------------------------
+
+
+
+
 --[Force role]---------------------------------------------------------------------------------
 --[[ulx.force][Forces <target(s)> to become a specified role.]
 @param  {[PlayerObject]} calling_ply   [The player who used the command.]
