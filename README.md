@@ -1,5 +1,9 @@
 # TTT ULX Commands
 ### Changelog
+
+28/03/2018
+* Added round gag and round mute commands
+
 24/03/2018
 * Removed the name color changing for developer
 
