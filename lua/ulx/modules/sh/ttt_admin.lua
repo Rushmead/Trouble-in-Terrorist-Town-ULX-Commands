@@ -88,12 +88,12 @@ end
 
 
 
---[Force role]---------------------------------------------------------------------------------
---[[ulx.force][Forces <target(s)> to become a specified role.]
+--[Slay Next Round]----------------------------------------------------------------------------
+--[[ulx.slaynr][Slays <target(s)> for a specified number of rounds]
 @param  {[PlayerObject]} calling_ply   [The player who used the command.]
 @param  {[PlayerObject]} target_plys   [The player(s) who will have the effects of the command applied to them.]
-@param  {[Number]}       target_role   [The role that target player(s) will have there role set to.]
-@param  {[Boolean]}      should_silent [Hidden, determines weather the output will be silent or not.]
+@param  {[Number]}       num_slay   [The number of the target(s) will recieve]
+@param  {[Boolean]}      should_slaynr [Hidden]
 --]]
 function ulx.slaynr( calling_ply, target_ply, num_slay, should_slaynr )
 	if not GetConVarString("gamemode") == "terrortown" then ULib.tsayError( calling_ply, gamemode_error, true ) else
